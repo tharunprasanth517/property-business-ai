@@ -1,0 +1,12 @@
+# =============================================================================
+# Base requirements — installed in ALL environments
+# =============================================================================
+
+# Django web framework
+Django==5.1.4
+
+# Load environment variables from .env files
+python-dotenv==1.0.1
+
+# MySQL database driver for Django
+mysqlclient==2.2.6
