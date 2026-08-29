@@ -8,6 +8,7 @@ health-check placeholder.
 
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 
 urlpatterns = [
     # Django admin panel
@@ -17,8 +18,13 @@ urlpatterns = [
     # Application URL namespaces — uncommented as each phase is built
     # ---------------------------------------------------------------------------
 
-    # Phase 2 — Authentication & Business Setup
-    # path("accounts/", include("apps.accounts.urls", namespace="accounts")),
+    # Phase 1A — Authentication
+    path("accounts/", include("apps.accounts.urls", namespace="accounts")),
+
+    # Root redirect — send visitors to login; logged-in users handled by dashboard view
+    path("", RedirectView.as_view(url="/accounts/login/", permanent=False)),
+
+    # Phase 2 — Business Setup
     # path("businesses/", include("apps.businesses.urls", namespace="businesses")),
 
     # Phase 3 — Products & Inventory

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Property Business AI{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card">
+    <h1>Welcome, {{ user.username }}!</h1>
+    <p class="meta">You are logged in as <strong>{{ user.email }}</strong></p>
+
+    <div class="info-grid">
+        <div class="info-item">
+            <span>Username</span>
+            <strong>{{ user.username }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Email</span>
+            <strong>{{ user.email }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Member since</span>
+            <strong>{{ user.date_joined|date:"d M Y" }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Staff access</span>
+            <strong>{{ user.is_staff|yesno:"Yes,No" }}</strong>
+        </div>
+    </div>
+
+    <p style="font-size:0.88rem;color:#6b7280;margin-top:0.5rem;">
+        &#128274; This is a temporary Phase 1A dashboard. 
+        The full analytics dashboard will be built in a later phase.
+    </p>
+
+    <form method="post" action="{% url 'accounts:logout' %}" style="margin-top:1.5rem;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
+</div>
+{% endblock %}

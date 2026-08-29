@@ -134,7 +134,7 @@ DATABASES = {
 
 # Django's built-in session authentication is used in V1.
 # The custom User model will be defined in apps.accounts once Phase 2 begins.
-# AUTH_USER_MODEL = "accounts.User"  # Uncomment when accounts app is ready.
+AUTH_USER_MODEL = "accounts.User"  # Phase 1A — custom User model activated.
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -144,7 +144,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "/dashboard/"
+LOGIN_REDIRECT_URL = "/accounts/dashboard/"   # Phase 1A temporary dashboard
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 # ---------------------------------------------------------------------------

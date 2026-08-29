@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — Property Business AI{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Sign In</h1>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+            <p class="helptext">{{ field.help_text }}</p>
+            {% endif %}
+            {% if field.errors %}
+            <ul class="errorlist">
+                {% for error in field.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        {# Non-field / __all__ errors (e.g. invalid credentials) #}
+        {% if form.non_field_errors %}
+        <ul class="errorlist" style="margin-bottom:0.75rem;">
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary">Sign In</button>
+    </form>
+
+    <p class="alt-link">Don't have an account? <a href="{% url 'accounts:register' %}">Register</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Property Business AI{% endblock %}</title>
+    <style>
+        /* ----------------------------------------------------------------
+           Minimal base stylesheet — Phase 1A placeholder.
+           Full UI redesign is planned for a later phase.
+        ---------------------------------------------------------------- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---- Navigation ---- */
+        nav {
+            background: #1c2340;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        nav .brand { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.03em; color: #fff; text-decoration: none; }
+        nav .nav-links { display: flex; gap: 1rem; align-items: center; }
+        nav a { color: #cbd5e1; text-decoration: none; font-size: 0.9rem; }
+        nav a:hover { color: #fff; }
+
+        /* ---- Main content ---- */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2.5rem 1rem;
+        }
+
+        /* ---- Card ---- */
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            padding: 2rem 2.5rem;
+            width: 100%;
+            max-width: 440px;
+        }
+        .card h1 { font-size: 1.4rem; margin-bottom: 1.5rem; color: #1c2340; }
+
+        /* ---- Messages ---- */
+        .messages { list-style: none; margin-bottom: 1rem; }
+        .messages li {
+            padding: 0.6rem 0.9rem;
+            border-radius: 4px;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+        .messages .success { background: #d1fae5; color: #065f46; }
+        .messages .error   { background: #fee2e2; color: #991b1b; }
+        .messages .info    { background: #dbeafe; color: #1e40af; }
+        .messages .warning { background: #fef3c7; color: #92400e; }
+
+        /* ---- Forms ---- */
+        .form-group { margin-bottom: 1.1rem; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.3rem; color: #374151; }
+        .form-group input {
+            width: 100%;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            transition: border-color 0.15s;
+        }
+        .form-group input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.15); }
+        .form-group .helptext { font-size: 0.78rem; color: #6b7280; margin-top: 0.25rem; }
+        .form-group .errorlist { list-style: none; margin-top: 0.25rem; }
+        .form-group .errorlist li { font-size: 0.82rem; color: #dc2626; }
+
+        /* ---- Buttons ---- */
+        .btn {
+            display: inline-block;
+            padding: 0.6rem 1.4rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .btn-primary { background: #4f46e5; color: #fff; width: 100%; text-align: center; margin-top: 0.5rem; }
+        .btn-primary:hover { background: #4338ca; }
+        .btn-danger  { background: #dc2626; color: #fff; }
+        .btn-danger:hover  { background: #b91c1c; }
+
+        /* ---- Helper text ---- */
+        .alt-link { margin-top: 1rem; font-size: 0.88rem; text-align: center; color: #6b7280; }
+        .alt-link a { color: #4f46e5; text-decoration: none; font-weight: 500; }
+        .alt-link a:hover { text-decoration: underline; }
+
+        /* ---- Dashboard-specific ---- */
+        .dashboard-card { max-width: 640px; }
+        .dashboard-card h1 { font-size: 1.6rem; }
+        .meta { margin-top: 0.5rem; font-size: 0.9rem; color: #6b7280; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1.5rem 0; }
+        .info-item { background: #f9fafb; border-radius: 6px; padding: 0.75rem 1rem; }
+        .info-item span { display: block; font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+        .info-item strong { font-size: 1rem; color: #1a1a1a; }
+
+        /* ---- Footer ---- */
+        footer { text-align: center; padding: 1rem; font-size: 0.8rem; color: #9ca3af; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="brand" href="{% url 'accounts:dashboard' %}">Property Business AI</a>
+    <div class="nav-links">
+        {% if user.is_authenticated %}
+            <span>{{ user.username }}</span>
+            <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" style="padding:0.35rem 0.9rem;font-size:0.85rem;">Logout</button>
+            </form>
+        {% else %}
+            <a href="{% url 'accounts:login' %}">Login</a>
+            <a href="{% url 'accounts:register' %}">Register</a>
+        {% endif %}
+    </div>
+</nav>
+
+<main>
+    {% if messages %}
+    <div style="position:fixed;top:1rem;right:1rem;z-index:999;min-width:260px;">
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<footer>Property Business AI &mdash; Phase 1A &mdash; Accounts</footer>
+
+</body>
+</html>
