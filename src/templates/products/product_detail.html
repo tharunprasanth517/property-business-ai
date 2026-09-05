@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} — {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card" style="max-width:760px; width:100%;">
+    <h1>{{ product.name }}</h1>
+    <p class="meta">{{ product.sku|default:"No SKU" }} &middot; {{ product.category.name|default:"Uncategorized" }}</p>
+
+    <div class="info-grid">
+        <div class="info-item">
+            <span>Current Stock</span>
+            <strong>{{ product.current_stock }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Reorder Level</span>
+            <strong>{{ product.reorder_level }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Cost Price</span>
+            <strong>{{ product.cost_price|default:"—" }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Selling Price</span>
+            <strong>{{ product.selling_price|default:"—" }}</strong>
+        </div>
+    </div>
+
+    <p class="meta" style="margin-top:1rem;">{{ product.description|default:"No description added." }}</p>
+
+    <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+        <a class="btn btn-primary" href="{% url 'inventory:update_stock' product.id %}" style="width:auto;">Adjust Stock</a>
+        <a class="btn" href="{% url 'products:product_edit' product.id %}" style="background:#fef3c7; color:#92400e; width:auto;">Edit</a>
+        <a class="btn" href="{% url 'products:product_list' %}" style="background:#f3f4f6; color:#111827; width:auto;">Back to Products</a>
+    </div>
+</div>
+{% endblock %}

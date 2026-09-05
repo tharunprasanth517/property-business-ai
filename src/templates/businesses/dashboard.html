@@ -36,6 +36,8 @@
         <a class="btn" href="{% url 'businesses:list' %}" style="background:#f3f4f6; color:#111827; width:auto;">Business List</a>
         {% if active_business %}
             <a class="btn" href="{% url 'businesses:property_list' %}" style="background:#ecfeff; color:#0f172a; width:auto;">Properties</a>
+            <a class="btn" href="{% url 'products:product_list' %}" style="background:#ede9fe; color:#4c1d95; width:auto;">Products</a>
+            <a class="btn" href="{% url 'inventory:stock_overview' %}" style="background:#dcfce7; color:#166534; width:auto;">Inventory</a>
         {% endif %}
     </div>
 

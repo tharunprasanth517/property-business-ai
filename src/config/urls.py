@@ -28,8 +28,8 @@ urlpatterns = [
     path("", RedirectView.as_view(url="/accounts/login/", permanent=False)),
 
     # Phase 3 — Products & Inventory
-    # path("products/", include("apps.products.urls", namespace="products")),
-    # path("inventory/", include("apps.inventory.urls", namespace="inventory")),
+    path("products/", include("apps.products.urls", namespace="products")),
+    path("inventory/", include("apps.inventory.urls", namespace="inventory")),
 
     # Phase 4 — Transactions
     # path("transactions/", include("apps.transactions.urls", namespace="transactions")),
