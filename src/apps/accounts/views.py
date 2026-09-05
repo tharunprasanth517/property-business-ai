@@ -112,4 +112,4 @@ def dashboard(request):
     This is a Phase 1A placeholder. It will be replaced by the full
     analytics dashboard in a later phase.
     """
-    return render(request, "accounts/dashboard.html", {"user": request.user})
+    return redirect("businesses:list")

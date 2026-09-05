@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Business Dashboard — Property Business AI{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card" style="max-width:980px; width:100%;">
+    <h1>{% if active_business %}{{ active_business.name }}{% else %}Business Dashboard{% endif %}</h1>
+    <p class="meta">
+        {% if active_business %}
+            {{ active_business.description|default:"No business description yet." }}
+        {% else %}
+            No active business selected. Create or switch to a business to start managing operations.
+        {% endif %}
+    </p>
+
+    {% if active_business %}
+        <div class="info-grid">
+            <div class="info-item">
+                <span>Members</span>
+                <strong>{{ member_count }}</strong>
+            </div>
+            <div class="info-item">
+                <span>Role</span>
+                <strong>
+                    {% for membership in active_business.memberships.all %}
+                        {% if membership.user == user %}{{ membership.get_role_display }}{% endif %}
+                    {% endfor %}
+                    {% if not active_business.memberships.all %}Owner{% endif %}
+                </strong>
+            </div>
+        </div>
+    {% endif %}
+
+    <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.5rem;">
+        <a class="btn btn-primary" href="{% url 'businesses:create' %}" style="width:auto;">Create Business</a>
+        <a class="btn" href="{% url 'businesses:list' %}" style="background:#f3f4f6; color:#111827; width:auto;">Business List</a>
+        {% if active_business %}
+            <a class="btn" href="{% url 'businesses:property_list' %}" style="background:#ecfeff; color:#0f172a; width:auto;">Properties</a>
+        {% endif %}
+    </div>
+
+    {% if active_business %}
+        <h2 style="margin-top: 2rem;">Recent Properties</h2>
+        {% if properties %}
+            <ul style="list-style:none; margin-top:1rem; display:grid; gap:0.75rem;">
+                {% for property in properties %}
+                    <li style="padding:0.9rem 1rem; background:#f9fafb; border-radius:8px;">
+                        <strong>{{ property.name }}</strong>
+                        <div class="meta">{{ property.property_type }} &middot; {{ property.address|default:"No address" }}</div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="meta" style="margin-top:1rem;">No properties attached to this business yet.</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

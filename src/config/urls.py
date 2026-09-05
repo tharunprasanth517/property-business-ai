@@ -21,11 +21,11 @@ urlpatterns = [
     # Phase 1A — Authentication
     path("accounts/", include("apps.accounts.urls", namespace="accounts")),
 
+    # Phase 2 — Business multi-tenancy
+    path("businesses/", include("apps.businesses.urls", namespace="businesses")),
+
     # Root redirect — send visitors to login; logged-in users handled by dashboard view
     path("", RedirectView.as_view(url="/accounts/login/", permanent=False)),
-
-    # Phase 2 — Business Setup
-    # path("businesses/", include("apps.businesses.urls", namespace="businesses")),
 
     # Phase 3 — Products & Inventory
     # path("products/", include("apps.products.urls", namespace="products")),

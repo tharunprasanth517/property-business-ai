@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ property.name }} — Property Business AI{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card" style="max-width:760px; width:100%;">
+    <h1>{{ property.name }}</h1>
+    <p class="meta">{{ property.description|default:"No description provided yet." }}</p>
+
+    <div class="info-grid">
+        <div class="info-item"><span>Type</span><strong>{{ property.get_property_type_display }}</strong></div>
+        <div class="info-item"><span>Business</span><strong>{% if property.business %}{{ property.business.name }}{% else %}Personal{% endif %}</strong></div>
+        <div class="info-item"><span>Owner</span><strong>{{ property.owner.username }}</strong></div>
+        <div class="info-item"><span>Address</span><strong>{{ property.address|default:"Not set" }}</strong></div>
+    </div>
+
+    <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+        <a class="btn btn-primary" href="{% url 'businesses:property_edit' property.id %}" style="width:auto;">Edit</a>
+        <a class="btn" href="{% url 'businesses:property_delete' property.id %}" style="background:#fee2e2; color:#991b1b; width:auto;">Delete</a>
+        <a class="btn" href="{% url 'businesses:property_list' %}" style="background:#f3f4f6; color:#111827; width:auto;">Back to Properties</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}My Businesses — Property Business AI{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card" style="max-width:980px; width:100%;">
+    <h1>My Businesses</h1>
+    <p class="meta">Manage the businesses you can access and switch your active tenant.</p>
+
+    {% if businesses %}
+        <div class="info-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top:1.5rem;">
+            {% for business in businesses %}
+                <div class="info-item">
+                    <span>Business</span>
+                    <strong>{{ business.name }}</strong>
+                    <p style="margin-top:0.5rem; color:#4b5563;">{{ business.description|default:"No description provided yet." }}</p>
+                    {% if active_business and active_business.pk == business.pk %}
+                        <p style="margin-top:0.5rem; color:#065f46; font-weight:600;">Active business</p>
+                    {% endif %}
+                    <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <a class="btn btn-primary" href="{% url 'businesses:detail' business.id %}" style="width:auto; padding:0.5rem 0.9rem;">Open</a>
+                        <a class="btn" href="{% url 'businesses:switch' business.id %}" style="background:#e0e7ff; color:#312e81; width:auto; padding:0.5rem 0.9rem;">Switch</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="meta" style="margin-top:1rem;">You do not belong to any businesses yet.</p>
+    {% endif %}
+
+    <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+        <a class="btn btn-primary" href="{% url 'businesses:create' %}" style="width:auto;">Create a Business</a>
+        <a class="btn" href="{% url 'businesses:dashboard' %}" style="background:#f3f4f6; color:#111827; width:auto;">Go to Dashboard</a>
+    </div>
+</div>
+{% endblock %}
