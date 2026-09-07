@@ -2,7 +2,7 @@
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
@@ -140,71 +140,90 @@ def property_list(request):
         return redirect("businesses:create")
 
     properties = Property.objects.filter(business=business).select_related("owner")
+    totals = properties.aggregate(
+        total_area=Sum("area"),
+        total_purchase_value=Sum("purchase_price"),
+        current_estimated_value=Sum("current_estimated_value"),
+        expected_selling_price=Sum("expected_selling_price"),
+    )
+    totals["potential_profit_loss"] = (
+        (totals["expected_selling_price"] or 0) - (totals["total_purchase_value"] or 0)
+    )
+    totals["current_profit_loss"] = (
+        (totals["current_estimated_value"] or 0) - (totals["total_purchase_value"] or 0)
+    )
     return render(
         request,
         "businesses/property_list.html",
-        {"business": business, "properties": properties},
+        {"business": business, "properties": properties, "totals": totals},
     )
 
 
 @login_required
 def personal_property_list(request):
-    """List personal properties that are not attached to a business."""
-    properties = Property.objects.filter(owner=request.user, business__isnull=True).select_related("owner")
-    return render(request, "businesses/property_list.html", {"properties": properties, "business": None})
+    """Legacy route retained as a redirect to the tenant-scoped property list."""
+    return redirect("businesses:property_list")
 
 
 @login_required
 def property_create(request):
-    """Create a property within the active tenant business or as personal property."""
+    """Create a property within the active tenant business."""
+    business = get_active_business(request, request.user)
+    if business is None:
+        messages.info(request, "Create a business before adding properties.")
+        return redirect("businesses:create")
+
     if request.method == "POST":
         form = PropertyForm(request.POST, user=request.user)
         if form.is_valid():
             property_obj = form.save(commit=False)
             property_obj.owner = request.user
-            property_obj.business = form.cleaned_data.get("business") or None
+            property_obj.business = business
             property_obj.save()
             messages.success(request, f"Property '{property_obj.name}' saved.")
             return redirect("businesses:property_list")
     else:
         form = PropertyForm(user=request.user)
-        active_business = get_active_business(request, request.user)
-        if active_business is not None:
-            form.fields["business"].initial = active_business
+        form.fields["business"].initial = business
 
     return render(request, "businesses/property_form.html", {"form": form, "title": "Add Property"})
 
 
 @login_required
 def property_detail(request, property_id):
-    """Detail view with tenant isolation. Business-scoped properties must belong to current user's chosen business."""
-    property_obj = get_object_or_404(Property.objects.select_related("business", "owner"), pk=property_id)
+    """Show a property only when it belongs to a business the user can access."""
+    property_obj = get_object_or_404(
+        Property.objects.select_related("business", "owner"),
+        pk=property_id,
+        business__in=get_user_businesses(request.user),
+    )
 
-    if property_obj.business is not None:
-        if not get_user_businesses(request.user).filter(pk=property_obj.business_id).exists():
-            raise PermissionDenied
-    elif property_obj.owner_id != request.user.pk:
-        raise PermissionDenied
-
-    return render(request, "businesses/property_detail.html", {"property": property_obj})
+    investment_summary = {
+        "current_profit_loss": (property_obj.current_estimated_value or 0) - (property_obj.purchase_price or 0),
+        "potential_profit_loss": (property_obj.expected_selling_price or 0) - (property_obj.purchase_price or 0),
+    }
+    return render(
+        request,
+        "businesses/property_detail.html",
+        {"property": property_obj, "investment_summary": investment_summary},
+    )
 
 
 @login_required
 def property_edit(request, property_id):
-    """Edit a property only when the current user has access to the business or owns it personally."""
-    property_obj = get_object_or_404(Property.objects.select_related("business"), pk=property_id)
-
-    if property_obj.business is not None and not get_user_businesses(request.user).filter(pk=property_obj.business_id).exists():
-        raise PermissionDenied
-    if property_obj.business is None and property_obj.owner_id != request.user.pk:
-        raise PermissionDenied
+    """Edit a property only inside an authorized business."""
+    property_obj = get_object_or_404(
+        Property.objects.select_related("business"),
+        pk=property_id,
+        business__in=get_user_businesses(request.user),
+    )
 
     if request.method == "POST":
         form = PropertyForm(request.POST, instance=property_obj, user=request.user)
         if form.is_valid():
             updated_property = form.save(commit=False)
             updated_property.owner = request.user
-            updated_property.business = form.cleaned_data.get("business") or None
+            updated_property.business = property_obj.business
             updated_property.save()
             messages.success(request, f"Property '{updated_property.name}' updated.")
             return redirect("businesses:property_detail", property_id=updated_property.pk)
@@ -216,13 +235,12 @@ def property_edit(request, property_id):
 
 @login_required
 def property_delete(request, property_id):
-    """Delete a property only when access is authorized and still within the tenant scope."""
-    property_obj = get_object_or_404(Property.objects.select_related("business"), pk=property_id)
-
-    if property_obj.business is not None and not get_user_businesses(request.user).filter(pk=property_obj.business_id).exists():
-        raise PermissionDenied
-    if property_obj.business is None and property_obj.owner_id != request.user.pk:
-        raise PermissionDenied
+    """Delete a property only inside an authorized business."""
+    property_obj = get_object_or_404(
+        Property.objects.select_related("business"),
+        pk=property_id,
+        business__in=get_user_businesses(request.user),
+    )
 
     if request.method == "POST":
         property_name = property_obj.name

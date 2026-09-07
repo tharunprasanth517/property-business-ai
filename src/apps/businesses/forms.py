@@ -15,10 +15,22 @@ class BusinessForm(forms.ModelForm):
 class PropertyForm(forms.ModelForm):
     class Meta:
         model = Property
-        exclude = ("owner",)
+        fields = (
+            "business",
+            "name",
+            "address",
+            "area",
+            "property_type",
+            "ownership_status",
+            "purchase_price",
+            "current_estimated_value",
+            "expected_selling_price",
+            "purchase_date",
+            "notes",
+        )
         widgets = {
             "address": forms.Textarea(attrs={"rows": 3}),
-            "description": forms.Textarea(attrs={"rows": 4}),
+            "notes": forms.Textarea(attrs={"rows": 4}),
             "purchase_date": forms.DateInput(attrs={"type": "date"}),
         }
 
@@ -27,5 +39,4 @@ class PropertyForm(forms.ModelForm):
         self.fields["business"].queryset = Business.objects.filter(
             memberships__user=user
         ).distinct()
-        self.fields["business"].required = False
-        self.fields["business"].empty_label = "Personal property (not attached to a business)"
+        self.fields["business"].required = True

@@ -20,16 +20,14 @@ urlpatterns = [
 
     # Phase 1A — Authentication
     path("accounts/", include("apps.accounts.urls", namespace="accounts")),
-
-    # Phase 2 — Business multi-tenancy
     path("businesses/", include("apps.businesses.urls", namespace="businesses")),
 
     # Root redirect — send visitors to login; logged-in users handled by dashboard view
     path("", RedirectView.as_view(url="/accounts/login/", permanent=False)),
 
     # Phase 3 — Products & Inventory
-    path("products/", include("apps.products.urls", namespace="products")),
-    path("inventory/", include("apps.inventory.urls", namespace="inventory")),
+    # path("products/", include("apps.products.urls", namespace="products")),
+    # path("inventory/", include("apps.inventory.urls", namespace="inventory")),
 
     # Phase 4 — Transactions
     # path("transactions/", include("apps.transactions.urls", namespace="transactions")),
@@ -43,3 +41,5 @@ urlpatterns = [
     # Phase 7 — Data Importer
     # path("import/", include("apps.data_importer.urls", namespace="data_importer")),
 ]
+
+

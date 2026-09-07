@@ -1,10 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}{% if business %}{{ business.name }} Properties{% else %}My Personal Properties{% endif %} — Property Business AI{% endblock %}
+{% block title %}{{ business.name }} Property Dashboard — Property Business AI{% endblock %}
 
 {% block content %}
 <div class="card dashboard-card" style="max-width:980px; width:100%;">
-    <h1>{% if business %}{{ business.name }} Properties{% else %}My Personal Properties{% endif %}</h1>
+    <h1>{{ business.name }} Property Dashboard</h1>
+    <p class="meta">Track land, buildings, valuations, and expected returns for this business.</p>
+
+    <div class="info-grid" style="grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));">
+        <div class="info-item"><span>Total properties</span><strong>{{ properties|length }}</strong></div>
+        <div class="info-item"><span>Total land area</span><strong>{{ totals.total_area|default:0|floatformat:2 }} sq ft</strong></div>
+        <div class="info-item"><span>Purchase value</span><strong>{{ totals.total_purchase_value|default:0|floatformat:2 }}</strong></div>
+        <div class="info-item"><span>Current value</span><strong>{{ totals.current_estimated_value|default:0|floatformat:2 }}</strong></div>
+        <div class="info-item"><span>Potential profit/loss</span><strong>{{ totals.potential_profit_loss|default:0|floatformat:2 }}</strong></div>
+    </div>
 
     <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
         <a class="btn btn-primary" href="{% url 'businesses:property_create' %}" style="width:auto;">Add Property</a>
@@ -18,7 +27,8 @@
             {% for property in properties %}
                 <li style="padding:1rem; background:#f9fafb; border-radius:8px;">
                     <strong>{{ property.name }}</strong>
-                    <div class="meta">{{ property.property_type }} &middot; {{ property.address|default:"No address" }}</div>
+                    <div class="meta">{{ property.get_property_type_display }} &middot; {{ property.address|default:"No address" }}</div>
+                    <div class="meta">{{ property.area|default:0|floatformat:2 }} sq ft &middot; Current value: {{ property.current_estimated_value|default:0|floatformat:2 }}</div>
                     <div style="margin-top:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
                         <a class="btn" href="{% url 'businesses:property_detail' property.id %}" style="background:#dbeafe; color:#1e3a8a; width:auto; padding:0.45rem 0.8rem;">Open</a>
                         <a class="btn" href="{% url 'businesses:property_edit' property.id %}" style="background:#fef3c7; color:#92400e; width:auto; padding:0.45rem 0.8rem;">Edit</a>

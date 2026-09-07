@@ -3,16 +3,39 @@
 {% block title %}{{ property.name }} — Property Business AI{% endblock %}
 
 {% block content %}
-<div class="card dashboard-card" style="max-width:760px; width:100%;">
+<div class="card dashboard-card" style="max-width:900px; width:100%;">
     <h1>{{ property.name }}</h1>
-    <p class="meta">{{ property.description|default:"No description provided yet." }}</p>
+    <p class="meta">{{ property.get_property_type_display }} in {{ property.business.name }}</p>
 
+    <h2>Property Information</h2>
     <div class="info-grid">
         <div class="info-item"><span>Type</span><strong>{{ property.get_property_type_display }}</strong></div>
-        <div class="info-item"><span>Business</span><strong>{% if property.business %}{{ property.business.name }}{% else %}Personal{% endif %}</strong></div>
-        <div class="info-item"><span>Owner</span><strong>{{ property.owner.username }}</strong></div>
-        <div class="info-item"><span>Address</span><strong>{{ property.address|default:"Not set" }}</strong></div>
+        <div class="info-item"><span>Ownership</span><strong>{{ property.get_ownership_status_display }}</strong></div>
+        <div class="info-item"><span>Area</span><strong>{{ property.area|default:0|floatformat:2 }} sq ft</strong></div>
+        <div class="info-item"><span>Purchase date</span><strong>{{ property.purchase_date|default:"Not set" }}</strong></div>
     </div>
+
+    <h2>Financial Information</h2>
+    <div class="info-grid">
+        <div class="info-item"><span>Purchase price</span><strong>{{ property.purchase_price|default:0|floatformat:2 }}</strong></div>
+        <div class="info-item"><span>Current estimated value</span><strong>{{ property.current_estimated_value|default:0|floatformat:2 }}</strong></div>
+        <div class="info-item"><span>Expected selling price</span><strong>{{ property.expected_selling_price|default:0|floatformat:2 }}</strong></div>
+    </div>
+
+    <h2>Location Information</h2>
+    <p class="meta">{{ property.address|default:"No address recorded." }}</p>
+
+    <h2>Investment Summary</h2>
+    <div class="info-grid">
+        <div class="info-item"><span>Current profit/loss</span><strong>{{ investment_summary.current_profit_loss|floatformat:2 }}</strong></div>
+        <div class="info-item"><span>Potential profit/loss</span><strong>{{ investment_summary.potential_profit_loss|floatformat:2 }}</strong></div>
+    </div>
+
+    <h2>Notes</h2>
+    <p class="meta">{{ property.notes|default:"No notes recorded." }}</p>
+
+    <h2>Future AI Analysis</h2>
+    <p class="meta">Location intelligence, valuation, recommendations, image analysis, and AI chat will be connected here in a future phase.</p>
 
     <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
         <a class="btn btn-primary" href="{% url 'businesses:property_edit' property.id %}" style="width:auto;">Edit</a>

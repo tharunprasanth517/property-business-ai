@@ -21,10 +21,6 @@ class Business(models.Model):
     def __str__(self):
         return self.name
 
-    @property
-    def member_count(self):
-        return self.memberships.count()
-
 
 class BusinessUser(models.Model):
     class Role(models.TextChoices):
@@ -51,21 +47,15 @@ class BusinessUser(models.Model):
     def __str__(self):
         return f"{self.user} - {self.business} ({self.get_role_display()})"
 
-    @property
-    def is_owner(self):
-        return self.role == self.Role.OWNER
-
-    @property
-    def can_manage(self):
-        return self.role in {self.Role.OWNER, self.Role.ADMIN, self.Role.MANAGER}
-
 
 class Property(models.Model):
     class PropertyType(models.TextChoices):
         LAND = "LAND", "Land"
+        HOUSE = "HOUSE", "House"
         RESIDENTIAL = "RESIDENTIAL", "Residential"
         COMMERCIAL = "COMMERCIAL", "Commercial"
         AGRICULTURAL = "AGRICULTURAL", "Agricultural"
+        INDUSTRIAL = "INDUSTRIAL", "Industrial"
         MIXED_USE = "MIXED_USE", "Mixed use"
         OTHER = "OTHER", "Other"
 
@@ -92,9 +82,7 @@ class Property(models.Model):
     )
     business = models.ForeignKey(
         Business,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        on_delete=models.CASCADE,
         related_name="properties",
     )
     address = models.TextField(blank=True)
@@ -104,10 +92,12 @@ class Property(models.Model):
     area_unit = models.CharField(max_length=30, default="sq ft")
     purchase_price = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     current_estimated_value = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    expected_selling_price = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     purchase_date = models.DateField(null=True, blank=True)
     ownership_status = models.CharField(max_length=20, choices=OwnershipStatus.choices, default=OwnershipStatus.OWNED)
     intended_purpose = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
     development_status = models.CharField(max_length=20, choices=DevelopmentStatus.choices, default=DevelopmentStatus.RAW)
     image_url = models.URLField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
