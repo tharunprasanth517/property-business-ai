@@ -3,44 +3,199 @@
 {% block title %}{{ property.name }} — Property Business AI{% endblock %}
 
 {% block content %}
-<div class="card dashboard-card" style="max-width:900px; width:100%;">
+<div class="card dashboard-card" style="max-width:1000px; width:100%;">
     <h1>{{ property.name }}</h1>
-    <p class="meta">{{ property.get_property_type_display }} in {{ property.business.name }}</p>
+    <p class="meta">{{ property.get_property_type_display }} &mdash; {{ property.business.name }}</p>
 
-    <h2>Property Information</h2>
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Property Info                                                        -->
+    <!-- ------------------------------------------------------------------ -->
+    <h2 style="font-size:1rem;margin:1.5rem 0 0.75rem;color:#374151;">Property Information</h2>
     <div class="info-grid">
         <div class="info-item"><span>Type</span><strong>{{ property.get_property_type_display }}</strong></div>
         <div class="info-item"><span>Ownership</span><strong>{{ property.get_ownership_status_display }}</strong></div>
-        <div class="info-item"><span>Area</span><strong>{{ property.area|default:0|floatformat:2 }} sq ft</strong></div>
-        <div class="info-item"><span>Purchase date</span><strong>{{ property.purchase_date|default:"Not set" }}</strong></div>
+        <div class="info-item"><span>Area</span><strong>{{ property.area|default:0|floatformat:2 }} {{ property.area_unit }}</strong></div>
+        <div class="info-item"><span>Development Status</span><strong>{{ property.get_development_status_display }}</strong></div>
+        <div class="info-item"><span>Purchase Date</span><strong>{{ property.purchase_date|default:"Not set" }}</strong></div>
+        <div class="info-item"><span>Intended Purpose</span><strong>{{ property.intended_purpose|default:"—" }}</strong></div>
     </div>
 
-    <h2>Financial Information</h2>
-    <div class="info-grid">
-        <div class="info-item"><span>Purchase price</span><strong>{{ property.purchase_price|default:0|floatformat:2 }}</strong></div>
-        <div class="info-item"><span>Current estimated value</span><strong>{{ property.current_estimated_value|default:0|floatformat:2 }}</strong></div>
-        <div class="info-item"><span>Expected selling price</span><strong>{{ property.expected_selling_price|default:0|floatformat:2 }}</strong></div>
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Financial Summary (from analytics service)                          -->
+    <!-- ------------------------------------------------------------------ -->
+    <h2 style="font-size:1rem;margin:1.75rem 0 0.75rem;color:#374151;">Financial Summary</h2>
+    <div class="info-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="info-item">
+            <span>Purchase Price</span>
+            <strong>₹{{ financial_summary.purchase_price|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Total Expenses</span>
+            <strong style="color:#92400e;">₹{{ financial_summary.total_expenses|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Interest Paid</span>
+            <strong style="color:#92400e;">₹{{ financial_summary.total_interest_paid|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item" style="background:#fef3c7;">
+            <span>Total Invested</span>
+            <strong>₹{{ financial_summary.total_invested|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Current Estimated Value</span>
+            <strong style="color:#059669;">₹{{ financial_summary.current_estimated_value|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item" style="border:2px solid {% if financial_summary.current_pnl >= 0 %}#059669{% else %}#dc2626{% endif %};">
+            <span>Current P&amp;L</span>
+            <strong style="color:{% if financial_summary.current_pnl >= 0 %}#059669{% else %}#dc2626{% endif %};font-size:1.1rem;">
+                ₹{{ financial_summary.current_pnl|floatformat:2 }}
+                {% if financial_summary.total_invested > 0 %}
+                <small style="font-size:0.75rem;">({{ financial_summary.current_roi_pct }}%)</small>
+                {% endif %}
+            </strong>
+        </div>
+        <div class="info-item">
+            <span>Expected Selling Price</span>
+            <strong>₹{{ financial_summary.expected_selling_price|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Outstanding Loans</span>
+            <strong style="color:{% if financial_summary.outstanding_loan_balance > 0 %}#dc2626{% else %}#059669{% endif %};">
+                ₹{{ financial_summary.outstanding_loan_balance|floatformat:2 }}
+            </strong>
+        </div>
+        <div class="info-item" style="border:2px solid {% if financial_summary.potential_pnl >= 0 %}#059669{% else %}#dc2626{% endif %};">
+            <span>Potential P&amp;L (at sale)</span>
+            <strong style="color:{% if financial_summary.potential_pnl >= 0 %}#059669{% else %}#dc2626{% endif %};font-size:1.1rem;">
+                ₹{{ financial_summary.potential_pnl|floatformat:2 }}
+                {% if financial_summary.total_invested > 0 %}
+                <small style="font-size:0.75rem;">({{ financial_summary.potential_roi_pct }}%)</small>
+                {% endif %}
+            </strong>
+        </div>
     </div>
 
-    <h2>Location Information</h2>
+    <!-- Expense breakdown by category -->
+    {% if financial_summary.total_expenses_by_category %}
+    <div style="margin-top:1rem;">
+        <p style="font-size:0.82rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Expenses by Category</p>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+            {% for cat, amount in financial_summary.total_expenses_by_category.items %}
+            <span style="background:#f3f4f6;border-radius:999px;padding:0.25rem 0.75rem;font-size:0.82rem;color:#374151;">
+                {{ cat }}: ₹{{ amount|floatformat:2 }}
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Recent Expenses                                                      -->
+    <!-- ------------------------------------------------------------------ -->
+    {% if financial_summary.recent_expenses %}
+    <h2 style="font-size:1rem;margin:1.75rem 0 0.75rem;color:#374151;">Recent Expenses</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+        <thead>
+            <tr style="background:#f9fafb;">
+                <th style="text-align:left;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">Title</th>
+                <th style="text-align:left;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">Category</th>
+                <th style="text-align:right;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">Amount (₹)</th>
+                <th style="text-align:left;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in financial_summary.recent_expenses %}
+            <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:0.5rem 0.6rem;">{{ expense.title }}</td>
+                <td style="padding:0.5rem 0.6rem;color:#6b7280;">{{ expense.category.name|default:"—" }}</td>
+                <td style="padding:0.5rem 0.6rem;text-align:right;">{{ expense.amount|floatformat:2 }}</td>
+                <td style="padding:0.5rem 0.6rem;">{{ expense.expense_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Active Loans                                                         -->
+    <!-- ------------------------------------------------------------------ -->
+    {% if financial_summary.active_loans %}
+    <h2 style="font-size:1rem;margin:1.75rem 0 0.75rem;color:#374151;">Active Loans</h2>
+    {% for loan in financial_summary.active_loans %}
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:0.85rem 1rem;margin-bottom:0.6rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+        <div>
+            <strong>{{ loan.lender_name }}</strong>
+            <span style="margin-left:0.75rem;font-size:0.82rem;color:#6b7280;">{{ loan.interest_rate }}% p.a. &mdash; EMI ₹{{ loan.emi_amount|floatformat:0 }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <span style="color:#dc2626;font-weight:600;font-size:0.9rem;">₹{{ loan.outstanding_balance|floatformat:2 }} outstanding</span>
+            <a href="{% url 'finances:loan_payment_create' loan.id %}" style="font-size:0.82rem;color:#059669;">Record EMI</a>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Recent Capital Transactions                                          -->
+    <!-- ------------------------------------------------------------------ -->
+    {% if financial_summary.capital_transactions %}
+    <h2 style="font-size:1rem;margin:1.75rem 0 0.75rem;color:#374151;">Capital Transactions</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+        <thead>
+            <tr style="background:#f9fafb;">
+                <th style="text-align:left;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">Type</th>
+                <th style="text-align:right;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">Amount (₹)</th>
+                <th style="text-align:left;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">Date</th>
+                <th style="text-align:left;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">Counterparty</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for txn in financial_summary.capital_transactions %}
+            <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:0.5rem 0.6rem;">{{ txn.get_transaction_type_display }}</td>
+                <td style="padding:0.5rem 0.6rem;text-align:right;font-weight:600;">{{ txn.amount|floatformat:2 }}</td>
+                <td style="padding:0.5rem 0.6rem;">{{ txn.transaction_date }}</td>
+                <td style="padding:0.5rem 0.6rem;color:#6b7280;">{{ txn.counterparty_name|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Location                                                             -->
+    <!-- ------------------------------------------------------------------ -->
+    <h2 style="font-size:1rem;margin:1.75rem 0 0.5rem;color:#374151;">Location</h2>
     <p class="meta">{{ property.address|default:"No address recorded." }}</p>
 
-    <h2>Investment Summary</h2>
-    <div class="info-grid">
-        <div class="info-item"><span>Current profit/loss</span><strong>{{ investment_summary.current_profit_loss|floatformat:2 }}</strong></div>
-        <div class="info-item"><span>Potential profit/loss</span><strong>{{ investment_summary.potential_profit_loss|floatformat:2 }}</strong></div>
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Notes                                                                -->
+    <!-- ------------------------------------------------------------------ -->
+    {% if property.notes %}
+    <h2 style="font-size:1rem;margin:1.5rem 0 0.5rem;color:#374151;">Notes</h2>
+    <p class="meta">{{ property.notes }}</p>
+    {% endif %}
+
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Future AI Placeholder                                                -->
+    <!-- ------------------------------------------------------------------ -->
+    <div style="background:#f0f9ff;border-left:4px solid #0891b2;padding:0.75rem 1rem;border-radius:4px;margin-top:1.75rem;font-size:0.87rem;color:#0e7490;">
+        <strong>Future AI Analysis</strong> &mdash; Buy/Hold/Sell recommendations, location intelligence, valuation forecasting, and AI chat will be connected here in a future phase.
     </div>
 
-    <h2>Notes</h2>
-    <p class="meta">{{ property.notes|default:"No notes recorded." }}</p>
-
-    <h2>Future AI Analysis</h2>
-    <p class="meta">Location intelligence, valuation, recommendations, image analysis, and AI chat will be connected here in a future phase.</p>
-
-    <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
-        <a class="btn btn-primary" href="{% url 'businesses:property_edit' property.id %}" style="width:auto;">Edit</a>
-        <a class="btn" href="{% url 'businesses:property_delete' property.id %}" style="background:#fee2e2; color:#991b1b; width:auto;">Delete</a>
-        <a class="btn" href="{% url 'businesses:property_list' %}" style="background:#f3f4f6; color:#111827; width:auto;">Back to Properties</a>
+    <!-- ------------------------------------------------------------------ -->
+    <!-- Action Buttons                                                       -->
+    <!-- ------------------------------------------------------------------ -->
+    <div style="margin-top:1.75rem; display:flex; gap:0.75rem; flex-wrap:wrap; border-top:1px solid #e5e7eb; padding-top:1.25rem;">
+        <a class="btn btn-primary" href="{% url 'finances:property_expense_create' property.id %}" style="width:auto;">+ Add Expense</a>
+        <a class="btn btn-primary" href="{% url 'finances:property_transaction_create' property.id %}" style="width:auto;">+ Record Transaction</a>
+        <a class="btn btn-primary" href="{% url 'finances:property_loan_create' property.id %}" style="width:auto;">+ Add Loan</a>
+        <a class="btn" href="{% url 'finances:property_expense_list' property.id %}" style="background:#f3f4f6;color:#374151;width:auto;">All Expenses</a>
+        <a class="btn" href="{% url 'finances:property_loan_list' property.id %}" style="background:#f3f4f6;color:#374151;width:auto;">All Loans</a>
+        <span style="flex:1;"></span>
+        <a class="btn" href="{% url 'businesses:property_edit' property.id %}" style="background:#1c2340;color:#fff;width:auto;">Edit Property</a>
+        <a class="btn btn-danger" href="{% url 'businesses:property_delete' property.id %}" style="width:auto;">Delete</a>
+        <a class="btn" href="{% url 'businesses:property_list' %}" style="background:#f3f4f6;color:#111827;width:auto;">Back to Properties</a>
     </div>
 </div>
 {% endblock %}

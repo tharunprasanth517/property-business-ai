@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Dashboard — {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card" style="max-width:1100px; width:100%;">
+    <h1>Financial Dashboard</h1>
+    <p class="meta">{{ business.name }}</p>
+
+    <!-- Date range filter -->
+    <form method="get" style="margin:1.25rem 0; display:flex; gap:0.75rem; align-items:flex-end; flex-wrap:wrap;">
+        <div>
+            <label style="font-size:0.8rem;font-weight:600;color:#374151;display:block;margin-bottom:0.2rem;">From</label>
+            <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d'|default:'' }}"
+                   style="padding:0.45rem 0.65rem;border:1px solid #d1d5db;border-radius:5px;font-size:0.9rem;">
+        </div>
+        <div>
+            <label style="font-size:0.8rem;font-weight:600;color:#374151;display:block;margin-bottom:0.2rem;">To</label>
+            <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d'|default:'' }}"
+                   style="padding:0.45rem 0.65rem;border:1px solid #d1d5db;border-radius:5px;font-size:0.9rem;">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:auto;margin-top:0;">Filter</button>
+        <a href="{% url 'analytics:business_dashboard' %}" class="btn" style="background:#f3f4f6;color:#111827;width:auto;margin-top:0;">Clear</a>
+    </form>
+
+    <!-- P&L Summary Cards -->
+    <div class="info-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1.75rem;">
+        <div class="info-item">
+            <span>Revenue</span>
+            <strong style="color:#059669;font-size:1.15rem;">₹{{ summary.revenue|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Cost of Goods Sold</span>
+            <strong style="color:#dc2626;font-size:1.15rem;">₹{{ summary.cogs|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Gross Profit</span>
+            <strong style="color:{% if summary.gross_profit >= 0 %}#059669{% else %}#dc2626{% endif %};font-size:1.15rem;">
+                ₹{{ summary.gross_profit|floatformat:2 }}
+            </strong>
+        </div>
+        <div class="info-item">
+            <span>Operating Expenses</span>
+            <strong style="color:#92400e;">₹{{ summary.operating_expenses|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Property Overhead</span>
+            <strong style="color:#92400e;">₹{{ summary.property_overhead|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item" style="border:2px solid {% if summary.net_profit >= 0 %}#059669{% else %}#dc2626{% endif %};">
+            <span>Net Profit / Loss</span>
+            <strong style="color:{% if summary.net_profit >= 0 %}#059669{% else %}#dc2626{% endif %};font-size:1.25rem;">
+                ₹{{ summary.net_profit|floatformat:2 }}
+            </strong>
+        </div>
+    </div>
+
+    <!-- Chart.js Bar Chart -->
+    {% if summary.chart_labels %}
+    <h2 style="font-size:1rem;margin-bottom:0.75rem;color:#374151;">Monthly Revenue vs. Expenses</h2>
+    <div style="position:relative;height:320px;margin-bottom:2rem;">
+        <canvas id="plChart"></canvas>
+    </div>
+    {% else %}
+    <div style="background:#f9fafb;border-radius:8px;padding:2rem;text-align:center;margin-bottom:2rem;">
+        <p style="color:#6b7280;font-size:0.9rem;">No transaction data for the selected period. Record purchases or sales to see the chart.</p>
+    </div>
+    {% endif %}
+
+    <!-- Quick Links -->
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;border-top:1px solid #e5e7eb;padding-top:1.25rem;">
+        <a class="btn btn-primary" href="{% url 'transactions:purchase_list' %}" style="width:auto;">Purchases</a>
+        <a class="btn btn-primary" href="{% url 'transactions:sale_list' %}" style="width:auto;">Sales</a>
+        <a class="btn btn-primary" href="{% url 'transactions:expense_list' %}" style="width:auto;">Expenses</a>
+        <a class="btn" href="{% url 'analytics:portfolio_summary' %}" style="background:#1c2340;color:#fff;width:auto;">Property Portfolio</a>
+    </div>
+</div>
+
+{% if summary.chart_labels %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const raw = {{ chart_data_json|safe }};
+    const ctx = document.getElementById('plChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: raw.labels,
+            datasets: [
+                {
+                    label: 'Revenue (₹)',
+                    data: raw.revenue,
+                    backgroundColor: 'rgba(5, 150, 105, 0.7)',
+                    borderColor: 'rgba(5, 150, 105, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Expenses (₹)',
+                    data: raw.expenses,
+                    backgroundColor: 'rgba(220, 38, 38, 0.65)',
+                    borderColor: 'rgba(220, 38, 38, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => '₹' + ctx.parsed.y.toLocaleString('en-IN', {minimumFractionDigits: 2}),
+                    },
+                },
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: v => '₹' + v.toLocaleString('en-IN'),
+                    },
+                },
+            },
+        },
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -25,20 +25,19 @@ urlpatterns = [
     # Root redirect — send visitors to login; logged-in users handled by dashboard view
     path("", RedirectView.as_view(url="/accounts/login/", permanent=False)),
 
-    # Phase 3 — Products & Inventory
+    # Phase 3 — Products & Inventory (URL routing done via businesses app for now)
     # path("products/", include("apps.products.urls", namespace="products")),
     # path("inventory/", include("apps.inventory.urls", namespace="inventory")),
 
-    # Phase 4 — Transactions
-    # path("transactions/", include("apps.transactions.urls", namespace="transactions")),
+    # Phase 5 — Financial Tracking
+    path("finances/", include("apps.finances.urls", namespace="finances")),
+    path("transactions/", include("apps.transactions.urls", namespace="transactions")),
+    path("analytics/", include("apps.analytics.urls", namespace="analytics")),
 
-    # Phase 5 — Analytics & Dashboard
-    # path("dashboard/", include("apps.analytics.urls", namespace="analytics")),
-
-    # Phase 6 — AI Action Plan
+    # Phase 6 — AI Action Plan (pending)
     # path("ai/", include("apps.ai_engine.urls", namespace="ai_engine")),
 
-    # Phase 7 — Data Importer
+    # Phase 7 — Data Importer (pending)
     # path("import/", include("apps.data_importer.urls", namespace="data_importer")),
 ]
 

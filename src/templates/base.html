@@ -126,6 +126,12 @@
     <a class="brand" href="{% url 'accounts:dashboard' %}">Property Business AI</a>
     <div class="nav-links">
         {% if user.is_authenticated %}
+            <a href="{% url 'businesses:list' %}">Dashboard</a>
+            <a href="{% url 'businesses:property_list' %}">Properties</a>
+            <a href="{% url 'finances:expense_category_list' %}">Finances</a>
+            <a href="{% url 'transactions:purchase_list' %}">Transactions</a>
+            <a href="{% url 'analytics:business_dashboard' %}">Analytics</a>
+            <span style="color:#94a3b8;">|</span>
             <span>{{ user.username }}</span>
             <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
                 {% csrf_token %}
@@ -152,7 +158,7 @@
     {% block content %}{% endblock %}
 </main>
 
-<footer>Property Business AI &mdash; Phase 1A &mdash; Accounts</footer>
+<footer>Property Business AI &mdash; Phase 5 &mdash; Financial Tracking</footer>
 
 </body>
 </html>

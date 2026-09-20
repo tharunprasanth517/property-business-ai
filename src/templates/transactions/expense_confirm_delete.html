@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Expense — Property Business AI{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:480px; width:100%;">
+    <h1>Delete Expense</h1>
+    <p style="margin:1rem 0;">Delete <strong>{{ expense.title }}</strong> (₹{{ expense.amount|floatformat:2 }})? This cannot be undone.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" style="width:auto;">Yes, Delete</button>
+        <a href="{% url 'transactions:expense_list' %}" class="btn" style="background:#f3f4f6;color:#111827;width:auto;margin-left:0.5rem;">Cancel</a>
+    </form>
+</div>
+{% endblock %}

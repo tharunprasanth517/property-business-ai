@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Purchase Detail — {{ purchase.supplier_name }}{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card" style="max-width:760px; width:100%;">
+    <h1>Purchase — {{ purchase.supplier_name }}</h1>
+    <p class="meta">{{ purchase.purchase_date }}{% if purchase.reference_number %} &mdash; Ref: {{ purchase.reference_number }}{% endif %}</p>
+
+    <div class="info-grid" style="margin:1.25rem 0;">
+        <div class="info-item"><span>Supplier</span><strong>{{ purchase.supplier_name }}</strong></div>
+        <div class="info-item"><span>Date</span><strong>{{ purchase.purchase_date }}</strong></div>
+        <div class="info-item"><span>Total Amount</span><strong>₹{{ purchase.total_amount|floatformat:2 }}</strong></div>
+        <div class="info-item"><span>Recorded By</span><strong>{{ purchase.recorded_by|default:"—" }}</strong></div>
+    </div>
+
+    <h2 style="font-size:1rem;margin:1.25rem 0 0.75rem;">Line Items</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+        <thead>
+            <tr style="background:#f9fafb;">
+                <th style="text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Product</th>
+                <th style="text-align:right;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Qty</th>
+                <th style="text-align:right;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Unit Cost (₹)</th>
+                <th style="text-align:right;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Line Total (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in purchase.items.all %}
+            <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:0.6rem 0.75rem;">{{ item.product.name }}</td>
+                <td style="padding:0.6rem 0.75rem;text-align:right;">{{ item.quantity }}</td>
+                <td style="padding:0.6rem 0.75rem;text-align:right;">{{ item.unit_cost|floatformat:2 }}</td>
+                <td style="padding:0.6rem 0.75rem;text-align:right;font-weight:600;">{{ item.line_total|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if purchase.notes %}
+    <p class="meta" style="margin-top:1rem;">Notes: {{ purchase.notes }}</p>
+    {% endif %}
+
+    <div style="margin-top:1.5rem;">
+        <a class="btn" href="{% url 'transactions:purchase_list' %}" style="background:#f3f4f6;color:#111827;width:auto;">Back to Purchases</a>
+    </div>
+</div>
+{% endblock %}

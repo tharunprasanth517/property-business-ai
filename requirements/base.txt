@@ -10,3 +10,7 @@ python-dotenv==1.0.1
 
 # MySQL database driver for Django
 mysqlclient==2.2.6
+
+# Phase 5 -- Analytics / Financial summaries
+pandas==2.2.2
+numpy==1.26.4

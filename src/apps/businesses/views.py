@@ -8,6 +8,7 @@ from django.urls import reverse
 
 from .forms import BusinessForm, PropertyForm
 from .models import Business, BusinessUser, Property
+from apps.analytics.services.property_finance_service import get_property_financial_summary
 
 ACTIVE_BUSINESS_SESSION_KEY = "active_business_id"
 
@@ -115,7 +116,7 @@ def business_create(request):
             )
             request.session[ACTIVE_BUSINESS_SESSION_KEY] = business.pk
             messages.success(request, f"Business '{business.name}' created successfully.")
-            return redirect("businesses:dashboard")
+            return redirect("businesses:list")
     else:
         form = BusinessForm()
 
@@ -128,7 +129,7 @@ def switch_business(request, business_id):
     business = get_user_business(request.user, business_id)
     request.session[ACTIVE_BUSINESS_SESSION_KEY] = business.pk
     messages.success(request, f"Active business switched to '{business.name}'.")
-    return redirect("businesses:dashboard")
+    return redirect("businesses:list")
 
 
 @login_required
@@ -191,21 +192,24 @@ def property_create(request):
 
 @login_required
 def property_detail(request, property_id):
-    """Show a property only when it belongs to a business the user can access."""
+    """Show a property with full financial summary."""
     property_obj = get_object_or_404(
         Property.objects.select_related("business", "owner"),
         pk=property_id,
         business__in=get_user_businesses(request.user),
     )
 
-    investment_summary = {
-        "current_profit_loss": (property_obj.current_estimated_value or 0) - (property_obj.purchase_price or 0),
-        "potential_profit_loss": (property_obj.expected_selling_price or 0) - (property_obj.purchase_price or 0),
-    }
+    active_business = get_active_business(request, request.user)
+    financial_summary = get_property_financial_summary(property_obj, property_obj.business)
+
     return render(
         request,
         "businesses/property_detail.html",
-        {"property": property_obj, "investment_summary": investment_summary},
+        {
+            "property": property_obj,
+            "business": active_business,
+            "financial_summary": financial_summary,
+        },
     )
 
 
@@ -253,9 +257,23 @@ def property_delete(request, property_id):
 
 @login_required
 def buy_property(request):
-    """Placeholder for future property purchase flows. Keeps the business context stable."""
+    """Record the purchase of a property — creates a PropertyTransaction(PURCHASE)."""
+    from apps.finances.models import PropertyTransaction
+    from apps.finances.forms import PropertyTransactionForm
+
     business = get_active_business(request, request.user)
     if business is None:
         return redirect("businesses:create")
-    messages.info(request, "Purchase flow will be added in a later phase.")
+
+    # Determine target property from GET param (optional)
+    property_id = request.GET.get("property_id") or request.POST.get("property_id")
+    if property_id:
+        property_obj = get_object_or_404(
+            Property,
+            pk=property_id,
+            business__in=get_user_businesses(request.user),
+        )
+        return redirect("finances:property_transaction_create", property_id=property_obj.pk)
+
+    messages.info(request, "Select a property to record its purchase.")
     return redirect("businesses:property_list")

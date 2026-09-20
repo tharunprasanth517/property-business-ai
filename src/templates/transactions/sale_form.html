@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card" style="max-width:700px; width:100%;">
+    <h1>{{ title }}</h1>
+    <p class="meta" style="margin-bottom:1.5rem;">{{ business.name }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <h2 style="font-size:1rem;margin-bottom:1rem;color:#374151;">Customer Details</h2>
+        {% for field in sale_form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}<p class="helptext">{{ field.help_text }}</p>{% endif %}
+            {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endfor %}
+
+        <h2 style="font-size:1rem;margin:1.5rem 0 1rem;color:#374151;">Product Line Item</h2>
+        <div style="background:#f9fafb;padding:1rem;border-radius:6px;border:1px solid #e5e7eb;">
+            {% for field in item_form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<p class="helptext">{{ field.help_text }}</p>{% endif %}
+                {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <p class="helptext" style="margin-top:0.75rem;">Stock will be automatically reduced when this sale is saved.</p>
+
+        <button type="submit" class="btn btn-primary" style="margin-top:1rem;">Save Sale</button>
+        <a href="{% url 'transactions:sale_list' %}" class="btn" style="background:#f3f4f6;color:#111827;margin-top:0.5rem;">Cancel</a>
+    </form>
+</div>
+{% endblock %}

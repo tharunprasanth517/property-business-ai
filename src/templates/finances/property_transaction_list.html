@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Capital Transactions — {{ property.name }}{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card" style="max-width:900px; width:100%;">
+    <h1>Capital Transactions — {{ property.name }}</h1>
+    <p class="meta">{{ business.name }}</p>
+
+    <div style="margin:1.25rem 0; display:flex; gap:0.75rem; flex-wrap:wrap;">
+        <a class="btn btn-primary" href="{% url 'finances:property_transaction_create' property.id %}" style="width:auto;">+ Record Transaction</a>
+        <a class="btn" href="{% url 'businesses:property_detail' property.id %}" style="background:#f3f4f6;color:#111827;width:auto;">Back to Property</a>
+    </div>
+
+    {% if transactions %}
+    <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+        <thead>
+            <tr style="background:#f9fafb;">
+                <th style="text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Type</th>
+                <th style="text-align:right;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Amount (₹)</th>
+                <th style="text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Date</th>
+                <th style="text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Counterparty</th>
+                <th style="text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for txn in transactions %}
+            <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:0.6rem 0.75rem;">
+                    {% if txn.transaction_type == "PURCHASE" %}
+                        <span style="background:#dbeafe;color:#1e40af;padding:0.2rem 0.55rem;border-radius:999px;font-size:0.78rem;font-weight:600;">Purchase</span>
+                    {% elif txn.transaction_type == "SALE" %}
+                        <span style="background:#d1fae5;color:#065f46;padding:0.2rem 0.55rem;border-radius:999px;font-size:0.78rem;font-weight:600;">Sale</span>
+                    {% else %}
+                        <span style="background:#fef3c7;color:#92400e;padding:0.2rem 0.55rem;border-radius:999px;font-size:0.78rem;font-weight:600;">Valuation</span>
+                    {% endif %}
+                </td>
+                <td style="padding:0.6rem 0.75rem;text-align:right;font-weight:600;">{{ txn.amount|floatformat:2 }}</td>
+                <td style="padding:0.6rem 0.75rem;">{{ txn.transaction_date }}</td>
+                <td style="padding:0.6rem 0.75rem;color:#6b7280;">{{ txn.counterparty_name|default:"—" }}</td>
+                <td style="padding:0.6rem 0.75rem;color:#6b7280;font-size:0.85rem;">{{ txn.notes|default:"—"|truncatechars:60 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="meta" style="margin-top:1rem;">No capital transactions recorded yet. Record a purchase or sale to begin.</p>
+    {% endif %}
+</div>
+{% endblock %}

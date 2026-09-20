@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Record EMI Payment — {{ loan.property.name }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:540px; width:100%;">
+    <h1>Record EMI Payment</h1>
+    <p class="meta" style="margin-bottom:0.5rem;">Loan from <strong>{{ loan.lender_name }}</strong></p>
+    <p class="meta" style="margin-bottom:1.25rem;">Property: <strong>{{ property.name }}</strong></p>
+
+    <div class="info-grid" style="margin-bottom:1.5rem;">
+        <div class="info-item"><span>Monthly EMI</span><strong>₹{{ loan.emi_amount|floatformat:2 }}</strong></div>
+        <div class="info-item"><span>Outstanding Balance</span><strong style="color:#dc2626;">₹{{ loan.outstanding_balance|floatformat:2 }}</strong></div>
+    </div>
+
+    <div style="background:#dbeafe;border-left:4px solid #3b82f6;padding:0.75rem 1rem;border-radius:4px;margin-bottom:1.25rem;font-size:0.88rem;color:#1e40af;">
+        Entering the principal paid will automatically reduce the outstanding balance.
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}<p class="helptext">{{ field.help_text }}</p>{% endif %}
+            {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Record Payment</button>
+        <a href="{% url 'businesses:property_detail' property.id %}" class="btn" style="background:#f3f4f6;color:#111827;margin-top:0.5rem;">Cancel</a>
+    </form>
+</div>
+{% endblock %}

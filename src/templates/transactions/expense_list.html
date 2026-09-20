@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Business Expenses — {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card" style="max-width:960px; width:100%;">
+    <h1>Business Expenses</h1>
+    <p class="meta">{{ business.name }} &mdash; operational overhead</p>
+
+    <div style="margin:1.25rem 0; display:flex; gap:0.75rem; flex-wrap:wrap;">
+        <a class="btn btn-primary" href="{% url 'transactions:expense_create' %}" style="width:auto;">+ Add Expense</a>
+        <a class="btn" href="{% url 'analytics:business_dashboard' %}" style="background:#f3f4f6;color:#111827;width:auto;">Analytics</a>
+    </div>
+
+    <div class="info-grid" style="margin-bottom:1.5rem;">
+        <div class="info-item"><span>Total Expenses</span><strong>₹{{ total|floatformat:2 }}</strong></div>
+        <div class="info-item"><span>Number of Entries</span><strong>{{ expenses|length }}</strong></div>
+    </div>
+
+    {% if expenses %}
+    <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+        <thead>
+            <tr style="background:#f9fafb;">
+                <th style="text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Title</th>
+                <th style="text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Category</th>
+                <th style="text-align:right;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Amount (₹)</th>
+                <th style="text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Date</th>
+                <th style="padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:0.6rem 0.75rem;font-weight:500;">{{ expense.title }}</td>
+                <td style="padding:0.6rem 0.75rem;color:#6b7280;">{{ expense.category|default:"—" }}</td>
+                <td style="padding:0.6rem 0.75rem;text-align:right;">{{ expense.amount|floatformat:2 }}</td>
+                <td style="padding:0.6rem 0.75rem;">{{ expense.expense_date }}</td>
+                <td style="padding:0.6rem 0.75rem;text-align:center;">
+                    <a href="{% url 'transactions:expense_edit' expense.id %}" style="font-size:0.82rem;color:#4f46e5;">Edit</a>
+                    &nbsp;|&nbsp;
+                    <a href="{% url 'transactions:expense_delete' expense.id %}" style="font-size:0.82rem;color:#dc2626;">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="meta" style="margin-top:1.5rem;">No business expenses recorded yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

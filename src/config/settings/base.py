@@ -54,6 +54,7 @@ PROJECT_APPS = [
     "apps.products",
     "apps.inventory",
     "apps.transactions",
+    "apps.finances",        # Phase 5 — property expenses, capital events, loans
     "apps.analytics",
     "apps.ai_engine",
     "apps.data_importer",

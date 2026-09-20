@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Purchases — {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card" style="max-width:960px; width:100%;">
+    <h1>Purchases</h1>
+    <p class="meta">{{ business.name }} &mdash; supplier purchase records</p>
+
+    <div style="margin:1.25rem 0; display:flex; gap:0.75rem; flex-wrap:wrap;">
+        <a class="btn btn-primary" href="{% url 'transactions:purchase_create' %}" style="width:auto;">+ Record Purchase</a>
+        <a class="btn" href="{% url 'analytics:business_dashboard' %}" style="background:#f3f4f6;color:#111827;width:auto;">Analytics</a>
+    </div>
+
+    {% if purchases %}
+    <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+        <thead>
+            <tr style="background:#f9fafb;">
+                <th style="text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Supplier</th>
+                <th style="text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Reference</th>
+                <th style="text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Date</th>
+                <th style="text-align:right;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Total (₹)</th>
+                <th style="text-align:center;padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Items</th>
+                <th style="padding:0.6rem 0.75rem;border-bottom:2px solid #e5e7eb;">Detail</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for purchase in purchases %}
+            <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:0.6rem 0.75rem;font-weight:500;">{{ purchase.supplier_name }}</td>
+                <td style="padding:0.6rem 0.75rem;color:#6b7280;">{{ purchase.reference_number|default:"—" }}</td>
+                <td style="padding:0.6rem 0.75rem;">{{ purchase.purchase_date }}</td>
+                <td style="padding:0.6rem 0.75rem;text-align:right;font-weight:600;">{{ purchase.total_amount|floatformat:2 }}</td>
+                <td style="padding:0.6rem 0.75rem;text-align:center;">{{ purchase.items.count }}</td>
+                <td style="padding:0.6rem 0.75rem;">
+                    <a href="{% url 'transactions:purchase_detail' purchase.id %}" style="font-size:0.82rem;color:#4f46e5;">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="meta" style="margin-top:1.5rem;">No purchases recorded yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

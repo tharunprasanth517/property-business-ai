@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Property Portfolio — {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="card dashboard-card" style="max-width:1100px; width:100%;">
+    <h1>Property Portfolio</h1>
+    <p class="meta">{{ business.name }} &mdash; {{ summary.property_count }} propert{{ summary.property_count|pluralize:"y,ies" }}</p>
+
+    <!-- Portfolio summary cards -->
+    <div class="info-grid" style="grid-template-columns:repeat(3,1fr);margin:1.5rem 0;">
+        <div class="info-item">
+            <span>Total Purchase Cost</span>
+            <strong>₹{{ summary.total_purchase_cost|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Total Expenses</span>
+            <strong style="color:#92400e;">₹{{ summary.total_expenses|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Outstanding Loans</span>
+            <strong style="color:#dc2626;">₹{{ summary.total_outstanding_loans|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Total Estimated Value</span>
+            <strong style="color:#059669;">₹{{ summary.total_estimated_value|floatformat:2 }}</strong>
+        </div>
+        <div class="info-item">
+            <span>Portfolio P&amp;L</span>
+            <strong style="color:{% if summary.current_portfolio_pnl >= 0 %}#059669{% else %}#dc2626{% endif %};">
+                ₹{{ summary.current_portfolio_pnl|floatformat:2 }}
+            </strong>
+        </div>
+        <div class="info-item" style="border:2px solid {% if summary.net_equity >= 0 %}#059669{% else %}#dc2626{% endif %};">
+            <span>Net Equity</span>
+            <strong style="color:{% if summary.net_equity >= 0 %}#059669{% else %}#dc2626{% endif %};font-size:1.15rem;">
+                ₹{{ summary.net_equity|floatformat:2 }}
+            </strong>
+        </div>
+    </div>
+
+    <!-- Donut chart (investment by property) -->
+    {% if summary.property_breakdown %}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;margin-bottom:2rem;">
+        <div>
+            <h2 style="font-size:1rem;margin-bottom:0.75rem;color:#374151;">Investment by Property</h2>
+            <div style="position:relative;height:280px;">
+                <canvas id="portfolioDonut"></canvas>
+            </div>
+        </div>
+
+        <div>
+            <h2 style="font-size:1rem;margin-bottom:0.75rem;color:#374151;">Per-Property Breakdown</h2>
+            <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+                <thead>
+                    <tr style="background:#f9fafb;">
+                        <th style="text-align:left;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">Property</th>
+                        <th style="text-align:right;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">Invested (₹)</th>
+                        <th style="text-align:right;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">Value (₹)</th>
+                        <th style="text-align:right;padding:0.5rem 0.6rem;border-bottom:2px solid #e5e7eb;">P&amp;L (₹)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in summary.property_breakdown %}
+                    <tr style="border-bottom:1px solid #f3f4f6;">
+                        <td style="padding:0.5rem 0.6rem;">
+                            <a href="{% url 'businesses:property_detail' row.property.id %}" style="color:#4f46e5;text-decoration:none;">
+                                {{ row.property.name }}
+                            </a>
+                        </td>
+                        <td style="padding:0.5rem 0.6rem;text-align:right;">{{ row.invested|floatformat:2 }}</td>
+                        <td style="padding:0.5rem 0.6rem;text-align:right;">{{ row.current_value|floatformat:2 }}</td>
+                        <td style="padding:0.5rem 0.6rem;text-align:right;font-weight:600;color:{% if row.pnl >= 0 %}#059669{% else %}#dc2626{% endif %};">
+                            {{ row.pnl|floatformat:2 }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div style="background:#f9fafb;border-radius:8px;padding:2rem;text-align:center;margin-bottom:2rem;">
+        <p style="color:#6b7280;font-size:0.9rem;">No properties found for this business.</p>
+    </div>
+    {% endif %}
+
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;border-top:1px solid #e5e7eb;padding-top:1.25rem;">
+        <a class="btn btn-primary" href="{% url 'businesses:property_list' %}" style="width:auto;">View Properties</a>
+        <a class="btn" href="{% url 'analytics:business_dashboard' %}" style="background:#1c2340;color:#fff;width:auto;">Business P&amp;L</a>
+    </div>
+</div>
+
+{% if summary.property_breakdown %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const raw = {{ donut_data_json|safe }};
+    const COLORS = [
+        '#4f46e5','#059669','#f59e0b','#dc2626','#0891b2',
+        '#7c3aed','#d97706','#16a34a','#db2777','#2563eb',
+    ];
+    const ctx = document.getElementById('portfolioDonut').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: raw.labels,
+            datasets: [{
+                data: raw.invested,
+                backgroundColor: COLORS.slice(0, raw.labels.length),
+                borderWidth: 2,
+                borderColor: '#fff',
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.label + ': ₹' + ctx.parsed.toLocaleString('en-IN', {minimumFractionDigits: 2}),
+                    },
+                },
+            },
+        },
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}
