@@ -37,3 +37,9 @@ class ProductBusinessScopeTests(TestCase):
 
         self.assertEqual(Product.objects.filter(business=self.business).count(), 1)
         self.assertNotIn(product, Product.objects.filter(business=self.other_business))
+
+    def test_products_urls_resolve(self):
+        from django.urls import reverse
+        self.assertEqual(reverse("products:product_list"), "/products/")
+        self.assertEqual(reverse("products:product_create"), "/products/add/")
+

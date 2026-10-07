@@ -83,3 +83,9 @@ class PropertyBusinessScopeTests(TestCase):
             self.assertEqual(response.status_code, 404)
 
         self.assertNotContains(self.client.get(reverse("businesses:property_list")), "Private Parcel")
+
+    def test_business_dashboard_renders_with_active_business(self):
+        response = self.client.get(reverse("businesses:list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("products:product_list"))
+        self.assertContains(response, reverse("inventory:stock_overview"))

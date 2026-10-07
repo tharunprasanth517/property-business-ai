@@ -25,9 +25,9 @@ urlpatterns = [
     # Root redirect — send visitors to login; logged-in users handled by dashboard view
     path("", RedirectView.as_view(url="/accounts/login/", permanent=False)),
 
-    # Phase 3 — Products & Inventory (URL routing done via businesses app for now)
-    # path("products/", include("apps.products.urls", namespace="products")),
-    # path("inventory/", include("apps.inventory.urls", namespace="inventory")),
+    # Phase 3 — Products & Inventory
+    path("products/", include("apps.products.urls", namespace="products")),
+    path("inventory/", include("apps.inventory.urls", namespace="inventory")),
 
     # Phase 5 — Financial Tracking
     path("finances/", include("apps.finances.urls", namespace="finances")),
